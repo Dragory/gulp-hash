@@ -1,0 +1,19 @@
+{
+  "name": "gulp-hash",
+  "version": "1.0.0",
+  "description": "Cachebust files by adding a hash to their name and/or content.",
+  "keywords": [
+    "cache",
+    "cachebust",
+    "gulpplugin"
+  ],
+  "author": {
+    "name": "Miikka Virtanen",
+    "email": "contact@mivir.fi"
+  },
+  "main": "./index.js",
+  "devDependencies": {
+    "through2": "^0.5.1",
+    "gulp": "^3.8.1"
+  }
+}
