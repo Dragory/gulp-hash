@@ -16,7 +16,7 @@ var defaultOptions = {
 
 	writeMappingFile: true,
 	mappingFile: 'asset-hashes.json',
-	preserveRootFolder: false, // E.g. with gulp.src('src/js/file.js'), whether to preserve js/ or not
+	preserveRootFolder: false, // E.g. with gulp.src('src/js/file.js'), whether to preserve js/ in the mapping file or not
 	formatMappings: null // Function to manipulate the mapping object
 };
 
