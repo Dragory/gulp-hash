@@ -153,7 +153,6 @@ function processFiles(userOptions) {
 			mappings = options.formatMappings(mappings);
 		}
 
-		console.log(process.cwd());
 		fs.writeFile(options.mappingFile, JSON.stringify(mappings));
 	});
 }
