@@ -8,20 +8,21 @@ var defaultOptions = {
 	algorithm: 'sha1',
 	hashLength: 8,
 
-	renameFiles: true,
+	renameFiles: true, // Whether to add the hash to the files' names
 	renameFunc: defaultRename, // See defaultRename below for more info
 
-	rewriteFiles: false,
-	rewriteFunc: defaultRewrite, // See defaultRewrite below for more info
+	editFiles: false, // Whether to add the hash to the files' contents
+	editFunc: defaultEdit, // See defaultEdit below for more info
 
 	writeMappingFile: true,
 	mappingFile: 'asset-hashes.json',
-	preserveRootFolder: false, // E.g. with gulp.src('src/js/file.js'), whether to preserve js/ in the mapping file or not
-	formatMappings: null // Function to manipulate the mapping object
+	mappingBasePath: '',   // Path to remove from the beginning of the file paths in the mapping file
+	mappingPathPrefix: '', // Path to append to the beginning of the file paths in the mapping file
+	formatMappings: null   // Function to manipulate the mapping object
 };
 
 /**
- * Simple rename that joins the file's name, hash and extension by a dot.
+ * A simple rename that joins the file's name, hash and extension by a dot.
  * Results are similar to: scripts.ab32c4.js
  *
  * @param  {string}  name  The file's name without the extension
@@ -35,7 +36,7 @@ function defaultRename(name, hash, ext) {
 }
 
 /**
- * Simple rewrite that appends the file's hash as a comment to the top of the file
+ * A simple edit that adds the file's hash as a comment to the top of the file
  *
  * @param  {object}  file      The original vinyl file object
  * @param  {string}  contents  The file's contents to process
@@ -43,7 +44,7 @@ function defaultRename(name, hash, ext) {
  *
  * @return  {string}  The processed file contents
  */
-function defaultRewrite(file, contents, hash) {
+function defaultEdit(file, contents, hash) {
 	return "// @hash " + hash + "\n" + contents;
 }
 
@@ -105,11 +106,29 @@ function processFiles(userOptions) {
 	if (typeof userOptions === 'undefined') userOptions = {};
 	options = mergeObjects(defaultOptions, userOptions);
 
+	var formatMappingPath = function(mPath) {
+		// Strip base path
+		if (options.mappingBasePath !== '') {
+			mPath = path.relative(options.mappingBasePath, mPath);
+		}
+
+		// Add path prefix
+		mPath = path.join(options.mappingPathPrefix, mPath);
+
+		return mPath;
+	};
+
+	var addMapping = function(from, to) {
+		from = formatMappingPath(from);
+		to = formatMappingPath(to);
+
+		mappings[from] = to;
+	};
+
 	return through2.obj(function(file, encoding, callback) {
 		var hash = getHash(file, options.algorithm, options.hashLength),
 			originalPath = file.path,
-			mappingSrc = file.relative,
-			mappingDest;
+			mappingSrc = file.relative;
 
 		if (file.isNull()) return;
 
@@ -120,10 +139,10 @@ function processFiles(userOptions) {
 			file.path = path.join(path.dirname(file.path), renamedFilename);
 		}
 
-		if (options.rewriteFiles) {
+		if (options.editFiles) {
 			var rewriteStream = new Stream.Transform({objectMode: true});
 			rewriteStream._transform = function(data, encoding, callback) {
-				this.push(options.rewriteFunc(file, data, hash));
+				this.push(options.editFunc(file, data, hash));
 			};
 
 			file.pipe(rewriteStream);
@@ -135,13 +154,7 @@ function processFiles(userOptions) {
 			}
 		}
 
-		mappingDest = file.relative;
-		if (options.preserveRootFolder) {
-			var rootFolder = path.basename(originalPath.replace(mappingSrc, ''));
-			mappingSrc = path.join(rootFolder, mappingSrc);
-			mappingDest = path.join(rootFolder, mappingDest);
-		}
-		mappings[mappingSrc] = mappingDest;
+		addMapping(mappingFrom, file.relative);
 
 		this.push(file);
 		return callback();
