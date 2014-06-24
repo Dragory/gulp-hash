@@ -126,10 +126,6 @@ function processFiles(userOptions) {
 	};
 
 	return through2.obj(function(file, encoding, callback) {
-		console.log(path.basename(file.path));
-		console.log(file.path);
-		console.log(file.relative);
-		console.log('---------------------');
 		var hash = getHash(file, options.algorithm, options.hashLength),
 			originalPath = file.path,
 			mappingFrom = file.relative;
