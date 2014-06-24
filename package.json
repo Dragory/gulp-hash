@@ -1,6 +1,6 @@
 {
   "name": "gulp-hash",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Cachebust files by adding a hash to their name and/or content.",
   "keywords": [
     "cache",
@@ -13,10 +13,11 @@
   },
   "main": "./index.js",
   "dependencies": {
-    "through2": "^0.5.1"
+    "event-stream": "^3.1.5"
   },
   "devDependencies": {
     "vinyl": "^0.2.3",
-    "mocha": "^1.20.1"
+    "mocha": "^1.20.1",
+    "bluebird": "^2.1.3"
   }
 }

@@ -1,12 +1,12 @@
 var crypto = require('crypto'),
-	through2 = require('through2'),
+	es = require('event-stream'),
 	path = require('path'),
 	fs = require('fs'),
 	Stream = require('stream');
 
 var defaultOptions = {
-	algorithm: 'sha1',
-	hashLength: 8,
+	algorithm: 'sha1', // Either a hash type string for crypto.createHash or a custom hashing function
+	hashLength: 8, // Length of the outputted hash
 
 	renameFiles: true, // Whether to add the hash to the files' names
 	renameFunc: defaultRename, // See defaultRename below for more info
@@ -14,12 +14,12 @@ var defaultOptions = {
 	editFiles: false, // Whether to add the hash to the files' contents
 	editFunc: defaultEdit, // See defaultEdit below for more info
 
-	writeMappingFile: true,
-	mappingFile: 'asset-hashes.json',
-	mergeMappings: true,   // If true, merges the new mappings with the old ones from mappingFile.
+	generateMappings: true, // Whether to output the mappings to a file or a function or not
+	mappingTarget: 'asset-hashes.json', // A file path or a function
+	mergeMappings: true,   // If true and mappingTarget is a path, merges the new mappings with the old ones from mappingFile.
 	mappingBasePath: '',   // Path to remove from the beginning of the file paths in the mapping file
 	mappingPathPrefix: '', // Path to append to the beginning of the file paths in the mapping file
-	formatMappings: null   // Function to manipulate the mapping object
+	formatMappings: null   // Function to manipulate the mappings object before passing it to mappingTarget
 };
 
 /**
@@ -76,111 +76,137 @@ function parseFilePath(inputPath) {
 	};
 }
 
-// Returns the hash of the contents of the given file
-function getHash(file, algorithm, hashLength) {
-	var func, hash;
+/**
+ * The plugin's main object.
+ * See defaultOptions above for a description of userOptions.
+ */
+function Hasher(userOptions) {
+	this.options = {};
+	this.mappings = {};
 
-	if (typeof algorithm === 'function') {
+	if (typeof userOptions === 'undefined') userOptions = {};
+	this.options = mergeObjects(defaultOptions, userOptions);
+}
+
+// Returns the hash of the file's contents
+Hasher.prototype.getHash = function(file) {
+	var _this = this,
+		func, hash;
+
+	if (typeof _this.options.algorithm === 'function') {
 		// Support custom hash functions
 		func = new Stream.Transform({objectMode: true});
 		func._transform = function(data, encoding, callback) {
-			this.push(algorithm(data));
+			this.push(_this.options.algorithm(data));
 		};
 
 		file.pipe(func);
 		hash = func.read();
 	} else {
 		// As well as the default ones
-		func = crypto.createHash(algorithm);
+		func = crypto.createHash(this.options.algorithm);
 
 		file.pipe(func);
 		hash = func.read().toString('hex');
 	}
 
-	return hash.substr(0, hashLength);
-}
+	return hash.substr(0, _this.options.hashLength);
+};
 
-function processFiles(userOptions) {
-	var options = {},
-		mappings = {};
+// Applies mapping path options to the given path, normalizes it and converts slashes to forward-slashes
+Hasher.prototype.formatMappingPath = function(mPath) {
+	// Strip base path
+	if (this.options.mappingBasePath !== '') {
+		mPath = path.relative(this.options.mappingBasePath, mPath);
+	}
 
-	if (typeof userOptions === 'undefined') userOptions = {};
-	options = mergeObjects(defaultOptions, userOptions);
+	// Add path prefix
+	if (this.options.mappingPathPrefix !== '') {
+		mPath = path.join(this.options.mappingPathPrefix, mPath);
+	}
 
-	var formatMappingPath = function(mPath) {
-		// Strip base path
-		if (options.mappingBasePath !== '') {
-			mPath = path.relative(options.mappingBasePath, mPath);
+	return path.normalize(mPath).replace(/\\/g, '/');
+};
+
+// Applies the specified rename and edit functions to the file
+Hasher.prototype.processFile = function(file) {
+	var _this = this,
+		hash = this.getHash(file),
+		mappingFrom = file.relative;
+
+	if (this.options.renameFiles) {
+		// Apply the specified rename function to the file's path
+		var filePathInfo = parseFilePath(file.relative),
+			renamedFilename = this.options.renameFunc(filePathInfo.name, hash, filePathInfo.ext);
+
+		file.path = path.join(path.dirname(file.path), renamedFilename);
+	}
+
+	if (this.options.editFiles) {
+		// Apply the specified edit function to the file's contents
+		var rewriteStream = new Stream.Transform({objectMode: true});
+		rewriteStream._transform = function(data, encoding, callback) {
+			this.push(_this.options.editFunc(file, data, hash));
+		};
+
+		file.pipe(rewriteStream);
+
+		if (file.isBuffer()) {
+			file.contents = new Buffer(rewriteStream.read(), encoding);
+		} else {
+			file.contents = rewriteStream;
 		}
+	}
 
-		// Add path prefix
-		mPath = path.join(options.mappingPathPrefix, mPath);
+	this.addMapping(mappingFrom, file.relative);
 
-		return path.normalize(mPath).replace('\\', '/');
-	};
+	return file;
+};
 
-	var addMapping = function(from, to) {
-		from = formatMappingPath(from);
-		to = formatMappingPath(to);
+// Adds the given 'from' and 'to' to our mappings
+Hasher.prototype.addMapping = function(from, to) {
+	from = this.formatMappingPath(from);
+	to = this.formatMappingPath(to);
 
-		mappings[from] = to;
-	};
+	this.mappings[from] = to;
+};
 
-	return through2.obj(function(file, encoding, callback) {
-		var hash = getHash(file, options.algorithm, options.hashLength),
-			originalPath = file.path,
-			mappingFrom = file.relative;
+// Either writes the mappings to a file as JSON or passes them to a user-specified function
+Hasher.prototype.outputMappings = function() {
+	if (! this.options.generateMappings) return;
 
-		if (file.isNull()) return;
+	if (typeof this.options.formatMappings === 'function') {
+		this.mappings = this.options.formatMappings(this.mappings);
+	}
 
-		if (options.renameFiles) {
-			var filePathInfo = parseFilePath(file.relative),
-				renamedFilename = options.renameFunc(filePathInfo.name, hash, filePathInfo.ext);
-
-			file.path = path.join(path.dirname(file.path), renamedFilename);
-		}
-
-		if (options.editFiles) {
-			var rewriteStream = new Stream.Transform({objectMode: true});
-			rewriteStream._transform = function(data, encoding, callback) {
-				this.push(options.editFunc(file, data, hash));
-			};
-
-			file.pipe(rewriteStream);
-
-			if (file.isBuffer()) {
-				file.contents = new Buffer(rewriteStream.read(), encoding);
-			} else {
-				file.contents = rewriteStream;
-			}
-		}
-
-		addMapping(mappingFrom, file.relative);
-
-		this.push(file);
-		return callback();
-	})
-	.on('end', function() {
-		if (! options.writeMappingFile) return;
-
-		if (typeof options.formatMappings === 'function') {
-			mappings = options.formatMappings(mappings);
-		}
-
-		if (options.mergeMappings) {
+	if (typeof this.options.mappingTarget === 'string') {
+		// Write directly to a file
+		if (this.options.mergeMappings) {
 			// Merge the old mappings with the new ones
-			fs.readFile(options.mappingFile, function(err, data) {
+			fs.readFile(this.options.mappingTarget, function(err, data) {
 				var previousMappings = {};
 				if (! err) previousMappings = JSON.parse(data);
 
-				mappings = mergeObjects(previousMappings, mappings);
-				fs.writeFile(options.mappingFile, JSON.stringify(mappings));
+				this.mappings = mergeObjects(previousMappings, this.mappings);
+				fs.writeFile(this.options.mappingTarget, JSON.stringify(this.mappings));
 			});
 		} else {
 			// Overwrite the old mapping file with the new one
-			fs.writeFile(options.mappingFile, JSON.stringify(mappings));
+			fs.writeFile(this.options.mappingTarget, JSON.stringify(this.mappings));
 		}
-	});
-}
+	} else {
+		// Pass the mappings to the user-supplied function
+		this.options.mappingTarget(this.mappings);
+	}
+};
 
-module.exports = processFiles;
+module.exports = function(userOptions) {
+	var hasher = new Hasher(userOptions);
+
+	return es.map(function(file, callback) {
+		callback(null, hasher.processFile(file));
+	})
+	.on('end', function() {
+		hasher.outputMappings();
+	});
+};
