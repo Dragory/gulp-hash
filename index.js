@@ -173,10 +173,13 @@ Hasher.prototype.addMapping = function(from, to) {
 
 // Either writes the mappings to a file as JSON or passes them to a user-specified function
 Hasher.prototype.outputMappings = function() {
+	var _this = this,
+		mappings = mergeObjects(this.mappings);
+
 	if (! this.options.generateMappings) return;
 
 	if (typeof this.options.formatMappings === 'function') {
-		this.mappings = this.options.formatMappings(this.mappings);
+		mappings = this.options.formatMappings(mappings);
 	}
 
 	if (typeof this.options.mappingTarget === 'string') {
@@ -187,16 +190,16 @@ Hasher.prototype.outputMappings = function() {
 				var previousMappings = {};
 				if (! err) previousMappings = JSON.parse(data);
 
-				this.mappings = mergeObjects(previousMappings, this.mappings);
-				fs.writeFile(this.options.mappingTarget, JSON.stringify(this.mappings));
+				mappings = mergeObjects(previousMappings, mappings);
+				fs.writeFile(_this.options.mappingTarget, JSON.stringify(mappings));
 			});
 		} else {
 			// Overwrite the old mapping file with the new one
-			fs.writeFile(this.options.mappingTarget, JSON.stringify(this.mappings));
+			fs.writeFile(this.options.mappingTarget, JSON.stringify(mappings));
 		}
 	} else {
 		// Pass the mappings to the user-supplied function
-		this.options.mappingTarget(this.mappings);
+		this.options.mappingTarget(mappings);
 	}
 };
 
