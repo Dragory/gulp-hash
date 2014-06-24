@@ -16,6 +16,7 @@ var defaultOptions = {
 
 	writeMappingFile: true,
 	mappingFile: 'asset-hashes.json',
+	mergeMappings: true,   // If true, merges the new mappings with the old ones from mappingFile.
 	mappingBasePath: '',   // Path to remove from the beginning of the file paths in the mapping file
 	mappingPathPrefix: '', // Path to append to the beginning of the file paths in the mapping file
 	formatMappings: null   // Function to manipulate the mapping object
@@ -166,7 +167,19 @@ function processFiles(userOptions) {
 			mappings = options.formatMappings(mappings);
 		}
 
-		fs.writeFile(options.mappingFile, JSON.stringify(mappings));
+		if (options.mergeMappings) {
+			// Merge the old mappings with the new ones
+			fs.readFile(options.mappingFile, function(err, data) {
+				var previousMappings = {};
+				if (! err) previousMappings = JSON.parse(data);
+
+				mappings = mergeObjects(previousMappings, mappings);
+				fs.writeFile(options.mappingFile, JSON.stringify(mappings));
+			});
+		} else {
+			// Overwrite the old mapping file with the new one
+			fs.writeFile(options.mappingFile, JSON.stringify(mappings));
+		}
 	});
 }
 
