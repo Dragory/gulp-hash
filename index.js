@@ -116,7 +116,7 @@ function processFiles(userOptions) {
 		// Add path prefix
 		mPath = path.join(options.mappingPathPrefix, mPath);
 
-		return mPath;
+		return path.normalize(mPath).replace('\\', '/');
 	};
 
 	var addMapping = function(from, to) {

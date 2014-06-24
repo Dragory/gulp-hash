@@ -1,6 +1,6 @@
 {
   "name": "gulp-hash",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Cachebust files by adding a hash to their name and/or content.",
   "keywords": [
     "cache",
