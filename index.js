@@ -90,6 +90,7 @@ exportObj.manifest = function(manifestPath) {
 				path: manifestPath,
 				contents: new Buffer(JSON.stringify(manifest))
 			}));
+			this.queue(null);
 		}
 	);
 };
