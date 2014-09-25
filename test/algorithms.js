@@ -8,6 +8,16 @@ var fakeFile = new gutil.File({
 	path: 'file.txt'
 });
 
+var fakeDir = new gutil.File({
+	contents: null,
+	path: 'dir',
+	stat: {
+    isDirectory: function() {
+      return true;
+    }
+  }
+});
+
 it('should work with crypto hash types', function(done) {
 	var testHash = hash({
 		algorithm: 'sha1',
@@ -37,5 +47,20 @@ it('should work with custom hash functions', function(done) {
 	});
 	
 	testHash.write(fakeFile.clone());
+	testHash.end();
+});
+
+it('should skip directories', function(done) {
+	var testHash = hash({
+		algorithm: 'sha1',
+		length: 8
+	});
+
+	testHash.once('data', function(file) {
+		assert.equal(file.path, 'dir');
+		done();
+	});
+	
+	testHash.write(fakeDir.clone());
 	testHash.end();
 });
