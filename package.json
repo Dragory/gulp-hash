@@ -17,6 +17,9 @@
     "type": "git",
     "url": "git@github.com:Dragory/gulp-hash.git"
   },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha"
+  },
   "main": "./index.js",
   "dependencies": {
     "event-stream": "^3.1.5",
