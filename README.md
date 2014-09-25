@@ -1,4 +1,4 @@
-# gulp-hash
+# gulp-hash [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url]
 Gulp plugin for cachebusting files by adding a hash to their name and/or content.
 Optionally writes a JSON file with mappings from the original filename to the renamed one.
 
@@ -27,3 +27,9 @@ gulp.src('./js/**/*')
 
 ## A more advanced example
 See [example/example-gulpfile.js](example/example-gulpfile.js) for an example for a full gulpfile.
+
+[npm-url]: https://www.npmjs.org/package/gulp-hash
+[npm-image]: https://badge.fury.io/js/gulp-hash.svg
+
+[travis-url]: https://travis-ci.org/Dragory/gulp-hash
+[travis-image]: https://api.travis-ci.org/Dragory/gulp-hash.svg
