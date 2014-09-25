@@ -55,6 +55,9 @@ var exportObj = function(userOptions) {
 	options = extend({}, defaultOptions, userOptions);
 
 	return es.map(function(file, callback) {
+		// Skip file if file is a directory
+		if (file.isDirectory()) { return callback(null, file); }
+
 		var hash = getHash(file, options.algorithm).substr(0, options.hashLength),
 			fileInfo = parseFilename(file.relative);
 
