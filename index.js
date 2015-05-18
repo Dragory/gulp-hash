@@ -4,7 +4,8 @@ var crypto = require('crypto'),
 	path = require('path'),
 	extend = require('lodash.assign'),
 	template = require('lodash.template'),
-	Stream = require('stream');
+	Stream = require('stream'),
+	Promise = require('es6-promise').Promise;
 
 var defaultOptions = {
 	algorithm: 'sha1', // Either a hash type string for crypto.createHash or a custom hashing function
@@ -30,24 +31,37 @@ function formatManifestPath(mPath) {
 }
 
 function getHash(file, algorithm) {
-	var stream, hash;
+	return new Promise(function(resolve, reject) {
+		var stream;
 
-	if (typeof algorithm === 'function') {
-		// Support custom hash functions
-		stream = es.through(function(data) {
-			hash = algorithm(data);
-		});
+		if (typeof algorithm === 'function') {
+			// Support custom hash functions
+			var contents = '';
 
-		file.pipe(stream);
-	} else {
-		// As well as the default ones
-		stream = crypto.createHash(algorithm);
+			stream = es.through(function(data) {
+				contents += (data !== null ? data.toString() : '');
+			}, function() {
+				resolve(algorithm(contents));
+			});
 
-		file.pipe(stream);
-		hash = stream.read().toString('hex');
-	}
+			file.pipe(stream, {end: true});
+		} else {
+			// As well as the default ones
+			stream = crypto.createHash(algorithm);
+			stream.setEncoding('hex');
 
-	return hash;
+			stream.on('readable', function() {
+				var hash = stream.read();
+				if (hash) resolve(hash);
+			});
+
+			file.pipe(es.through(function(contents) {
+				stream.write(contents.toString());
+			}, function() {
+				stream.end();
+			}), {end: true});
+		}
+	});
 }
 
 var exportObj = function(userOptions) {
@@ -58,21 +72,24 @@ var exportObj = function(userOptions) {
 		// Skip file if file is a directory
 		if (file.isDirectory()) { return callback(null, file); }
 
-		var hash = getHash(file, options.algorithm).substr(0, options.hashLength),
-			fileInfo = parseFilename(file.relative);
+		getHash(file, options.algorithm).then(function(hash) {
+			hash = hash.substr(0, options.hashLength);
 
-		file.hash = hash;
-		file.origFilename = path.basename(file.relative);
-		
-		var newFilename = template(options.template, {
-			hash: hash,
-			name: fileInfo.name,
-			ext: fileInfo.ext
+			var fileInfo = parseFilename(file.relative);
+
+			file.hash = hash;
+			file.origFilename = path.basename(file.relative);
+			
+			var newFilename = template(options.template, {
+				hash: hash,
+				name: fileInfo.name,
+				ext: fileInfo.ext
+			});
+
+			file.path = path.join(path.dirname(file.path), newFilename);
+
+			callback(null, file);
 		});
-
-		file.path = path.join(path.dirname(file.path), newFilename);
-
-		callback(null, file);
 	});
 };
 
