@@ -1,4 +1,5 @@
 var crypto = require('crypto'),
+    fs = require('fs'),
 	gutil = require('gulp-util'),
 	es = require('event-stream'),
 	path = require('path'),
@@ -93,7 +94,8 @@ var exportObj = function(userOptions) {
 	});
 };
 
-exportObj.manifest = function(manifestPath) {
+exportObj.manifest = function(manifestPath, append) {
+	append = (typeof append === 'undefined' ? false : append);
 	var manifest = {};
 
 	return es.through(
@@ -106,11 +108,30 @@ exportObj.manifest = function(manifestPath) {
 		},
 
 		function() {
-			this.queue(new gutil.File({
-				path: manifestPath,
-				contents: new Buffer(JSON.stringify(manifest))
-			}));
-			this.queue(null);
+			var contents = {},
+			    finish;
+
+			finish = function(data) {
+				this.queue(new gutil.File({
+					path: manifestPath,
+					contents: new Buffer(JSON.stringify(data))
+				}));
+
+				this.queue(null);
+			}.bind(this);
+
+			if (append) {
+				fs.readFile(manifestPath, {encoding: 'utf8'}, function(err, content) {
+					if (err) content = '{}';
+
+					var parsed = {};
+					try { parsed = JSON.parse(content); } catch (e) {}
+
+					finish(extend({}, parsed, manifest));
+				});
+			} else {
+				finish(manifest);
+			}
 		}
 	);
 };
