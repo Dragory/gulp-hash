@@ -80,7 +80,7 @@ var exportObj = function(userOptions) {
 
 			file.hash = hash;
 			file.origFilename = path.basename(file.relative);
-			
+
 			var newFilename = template(options.template, {
 				hash: hash,
 				name: fileInfo.name,
@@ -94,9 +94,21 @@ var exportObj = function(userOptions) {
 	});
 };
 
+var origManifestContents = {};
+var appendQueue = Promise.resolve();
+
 exportObj.manifest = function(manifestPath, append) {
 	append = (typeof append === 'undefined' ? false : append);
 	var manifest = {};
+
+    if (append && ! origManifestContents[manifestPath]) {
+        try {
+            var content = fs.readFileSync(manifestPath, {encoding: 'utf8'});
+            origManifestContents[manifestPath] = JSON.parse(content);
+        } catch (e) {
+            origManifestContents[manifestPath] = {};
+        }
+    }
 
 	return es.through(
 		function(file, callback) {
@@ -112,23 +124,21 @@ exportObj.manifest = function(manifestPath, append) {
 			    finish;
 
 			finish = function(data) {
+                origManifestContents[manifestPath] = data;
+
 				this.queue(new gutil.File({
 					path: manifestPath,
-					contents: new Buffer(JSON.stringify(data))
+					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath]))
 				}));
 
 				this.queue(null);
 			}.bind(this);
 
 			if (append) {
-				fs.readFile(manifestPath, {encoding: 'utf8'}, function(err, content) {
-					if (err) content = '{}';
-
-					var parsed = {};
-					try { parsed = JSON.parse(content); } catch (e) {}
-
-					finish(extend({}, parsed, manifest));
-				});
+                appendQueue.then(new Promise(function(resolve, reject) {
+                    finish(extend({}, origManifestContents[manifestPath], manifest));
+                    resolve();
+                }));
 			} else {
 				finish(manifest);
 			}
