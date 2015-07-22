@@ -33,7 +33,7 @@ gulp.src('./js/**/*')
 | append | false | Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
 
 ## A more advanced example
-See [example/example-gulpfile.js](example/example-gulpfile.js) for an example for a full gulpfile.
+See [example/example-gulpfile.js](example/example-gulpfile.js) for an example for a full gulpfile.  
 **Note:** The example is out of date, but should work; it is, however, way more convoluted than it has to be and will be updated later.
 
 [npm-url]: https://www.npmjs.org/package/gulp-hash
