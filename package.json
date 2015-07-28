@@ -1,6 +1,6 @@
 {
   "name": "gulp-hash",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "A gulp plugin for cachebusting files by adding a hash to their name and/or content. Optionally writes a JSON file with mappings from the original filename to the renamed one.",
   "keywords": [
     "cache",
