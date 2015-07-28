@@ -23,6 +23,7 @@ gulp.src('./js/**/*')
 | ------ | ------- | ----------- |
 | algorithm | 'sha1' | A hashing algorithm for crypto.createHash or equivalent custom function |
 | hashLength | 8 | The length of the hash to add to the file's name (substr from the start of the full hash) |
+| version | 0 | Key to change hash without changing files content |
 | template | `'<%= name %>-<%= hash %><%= ext %>'` | Format for renaming the files |
 
 ### hash.manifest(manifestPath, append)

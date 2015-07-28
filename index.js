@@ -11,7 +11,7 @@ var crypto = require('crypto'),
 var defaultOptions = {
 	algorithm: 'sha1', // Either a hash type string for crypto.createHash or a custom hashing function
 	hashLength: 8, // Length of the outputted hash
-
+    version: 0, // Version of asstes to use in hash function
 	template: '<%= name %>-<%= hash %><%= ext %>'
 };
 
@@ -31,7 +31,7 @@ function formatManifestPath(mPath) {
 	return path.normalize(mPath).replace(/\\/g, '/');
 }
 
-function getHash(file, algorithm) {
+function getHash(file, algorithm, version) {
 	return new Promise(function(resolve, reject) {
 		var stream;
 
@@ -42,7 +42,7 @@ function getHash(file, algorithm) {
 			stream = es.through(function(data) {
 				contents += (data !== null ? data.toString() : '');
 			}, function() {
-				resolve(algorithm(contents));
+				resolve(algorithm(contents + version.toString()));
 			});
 
 			file.pipe(stream, {end: true});
@@ -57,7 +57,7 @@ function getHash(file, algorithm) {
 			});
 
 			file.pipe(es.through(function(contents) {
-				stream.write(contents.toString());
+				stream.write(contents.toString() + version.toString());
 			}, function() {
 				stream.end();
 			}), {end: true});
@@ -73,7 +73,7 @@ var exportObj = function(userOptions) {
 		// Skip file if file is a directory
 		if (file.isDirectory()) { return callback(null, file); }
 
-		getHash(file, options.algorithm).then(function(hash) {
+		getHash(file, options.algorithm, options.version).then(function(hash) {
 			hash = hash.substr(0, options.hashLength);
 
 			var fileInfo = parseFilename(file.relative);
