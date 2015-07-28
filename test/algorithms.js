@@ -25,7 +25,7 @@ it('should work with crypto hash types', function(done) {
 	});
 
 	testHash.once('data', function(file) {
-		assert.equal(path.basename(file.path), 'file-6f4c6482.txt');
+		assert.equal(path.basename(file.path), 'file-f7ff9e8b.txt');
 		done();
 	});
 

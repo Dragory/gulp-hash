@@ -1,5 +1,5 @@
 var crypto = require('crypto'),
-    fs = require('fs'),
+	fs = require('fs'),
 	gutil = require('gulp-util'),
 	es = require('event-stream'),
 	path = require('path'),
@@ -11,8 +11,8 @@ var crypto = require('crypto'),
 var defaultOptions = {
 	algorithm: 'sha1', // Either a hash type string for crypto.createHash or a custom hashing function
 	hashLength: 8, // Length of the outputted hash
-    version: 0, // Version of asstes to use in hash function
-	template: '<%= name %>-<%= hash %><%= ext %>'
+	template: '<%= name %>-<%= hash %><%= ext %>',
+	version: '' // Version of asstes to use in hash function (appended to the contents)
 };
 
 // Parses and separates the file name and extension from a filename/path
