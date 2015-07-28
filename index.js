@@ -67,7 +67,7 @@ function getHash(file, algorithm) {
 
 var exportObj = function(userOptions) {
 	if (typeof userOptions === 'undefined') userOptions = {};
-	options = extend({}, defaultOptions, userOptions);
+	var options = extend({}, defaultOptions, userOptions);
 
 	return es.map(function(file, callback) {
 		// Skip file if file is a directory
