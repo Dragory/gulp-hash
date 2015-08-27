@@ -1,6 +1,6 @@
 {
   "name": "gulp-hash",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A gulp plugin for cachebusting files by adding a hash to their name and/or content. Optionally writes a JSON file with mappings from the original filename to the renamed one.",
   "keywords": [
     "cache",
@@ -23,12 +23,13 @@
   "main": "./index.js",
   "dependencies": {
     "es6-promise": "^2.1.1",
-    "event-stream": "^3.1.5",
     "gulp-util": "^2.2.17",
     "lodash.assign": "^2.4.1",
-    "lodash.template": "^2.4.1"
+    "lodash.template": "^2.4.1",
+    "through2": "^2.0.0"
   },
   "devDependencies": {
+    "gulp": "^3.9.0",
     "mocha": "^1.20.1"
   }
 }

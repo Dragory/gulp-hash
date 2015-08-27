@@ -1,12 +1,9 @@
 var path = require('path'),
-	gutil = require('gulp-util'),
+    gulp = require('gulp'),
+    gutil = require('gulp-util'),
 	assert = require('assert'),
+	through2 = require('through2'),
 	hash = require('../index.js');
-
-var fakeFile = new gutil.File({
-	contents: new Buffer('Hello'),
-	path: 'file.txt'
-});
 
 var fakeDir = new gutil.File({
 	contents: null,
@@ -24,66 +21,86 @@ it('should work with crypto hash types', function(done) {
 		length: 8
 	});
 
-	testHash.once('data', function(file) {
-		assert.equal(path.basename(file.path), 'file-f7ff9e8b.txt');
-		done();
-	});
-
-	testHash.write(fakeFile.clone());
-	testHash.end();
+	gulp.src([__dirname + '/fixture.txt'], {buffer: true})
+		.pipe(hash({
+			algorithm: 'sha1',
+			length: 8
+		}))
+		.pipe(through2.obj(function(file) {
+			assert.equal(path.basename(file.path), 'fixture-1d229271.txt');
+			done();
+		}));
 });
 
 it('should work with custom hash functions', function(done) {
-	var testHash = hash({
-		algorithm: function(data) {
-			return '0123456789';
-		},
-		length: 8
-	});
-
-	testHash.once('data', function(file) {
-		assert.equal(path.basename(file.path), 'file-01234567.txt');
-		done();
-	});
-
-	testHash.write(fakeFile.clone());
-	testHash.end();
+	gulp.src([__dirname + '/fixture.txt'], {buffer: true})
+		.pipe(hash({
+			algorithm: function(data) {
+				return '0123456789';
+			},
+			length: 8
+		}))
+		.pipe(through2.obj(function(file) {
+			assert.equal(path.basename(file.path), 'fixture-01234567.txt');
+			done();
+		}));
 });
 
 it('should skip directories', function(done) {
-	var testHash = hash({
-		algorithm: 'sha1',
-		length: 8
-	});
-
-	testHash.once('data', function(file) {
-		assert.equal(file.path, 'dir');
-		done();
-	});
-
-	testHash.write(fakeDir.clone());
-	testHash.end();
+	gulp.src(__dirname + '/fixture-dir')
+		.pipe(hash({
+			algorithm: 'sha1',
+			length: 8
+		}))
+		.pipe(through2.obj(function(file) {
+			// This indicates the path was not touched i.e. it ignored the dir
+			assert.equal(path.basename(file.path), 'fixture-dir');
+			done();
+		}));
 });
 
 it('should use assets version', function(done) {
-	var one = hash({
-		length: 8,
-		version: 0
-	});
-	var two = hash({
-		length: 8,
-		version: 1
-	});
+	var Promise = require('es6-promise').Promise;
 
-	one.once('data', function(file1) {
-		two.once('data', function(file2) {
-			assert.notEqual(path.basename(file1.path), path.basename(file2.path));
-			done();
-		});
-	});
+	Promise.all([
+		new Promise(function(resolve, reject) {
+			gulp.src(__dirname + '/fixture.txt')
+				.pipe(hash({
+					length: 8,
+					version: 0
+				}))
+				.pipe(through2.obj(function(file) {
+					resolve(file.path);
+				}));
+		}),
 
-	one.write(fakeFile.clone());
-	one.end();
-	two.write(fakeFile.clone());
-	two.end();
+		new Promise(function(resolve, reject) {
+			gulp.src(__dirname + '/fixture.txt')
+				.pipe(hash({
+					length: 8,
+					version: 1
+				}))
+				.pipe(through2.obj(function(file) {
+					resolve(file.path);
+				}));
+		})
+	]).then(function(paths) {
+		assert.notEqual(paths[0], paths[1]);
+		done();
+	});
+});
+
+it('should work with streams', function(done) {
+	gulp.src(__dirname + '/fixture.txt')
+		.pipe(hash({
+			algorithm: 'sha1',
+			length: 8
+		}))
+		.pipe(through2.obj(function(file) {
+			assert.equal(path.basename(file.path), 'fixture-1d229271.txt');
+			file.pipe(through2.obj(function(content) {
+				assert(content.toString().length !== 0);
+				done();
+			}));
+		}));
 });

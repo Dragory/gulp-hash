@@ -1,7 +1,7 @@
 var crypto = require('crypto'),
 	fs = require('fs'),
 	gutil = require('gulp-util'),
-	es = require('event-stream'),
+	through2 = require('through2'),
 	path = require('path'),
 	extend = require('lodash.assign'),
 	template = require('lodash.template'),
@@ -39,8 +39,9 @@ function getHash(file, algorithm, version) {
 			// Support custom hash functions
 			var contents = '';
 
-			stream = es.through(function(data) {
+			stream = through2(function(data, enc, cb) {
 				contents += (data !== null ? data.toString() : '');
+				cb();
 			}, function() {
 				resolve(algorithm(contents + version.toString()));
 			});
@@ -56,11 +57,14 @@ function getHash(file, algorithm, version) {
 				if (hash) resolve(hash);
 			});
 
-			file.pipe(es.through(function(contents) {
-				stream.write(contents.toString() + version.toString());
+			var fullContents = '';
+			file.pipe(through2.obj(function(contents, enc, cb) {
+				if (contents !== null) fullContents += contents.toString();
+				cb();
 			}, function() {
+				stream.write(fullContents + version.toString());
 				stream.end();
-			}), {end: true});
+			}));
 		}
 	});
 }
@@ -69,9 +73,15 @@ var exportObj = function(userOptions) {
 	if (typeof userOptions === 'undefined') userOptions = {};
 	var options = extend({}, defaultOptions, userOptions);
 
-	return es.map(function(file, callback) {
-		// Skip file if file is a directory
-		if (file.isDirectory()) { return callback(null, file); }
+	return through2.obj(function(file, enc, cb) {
+		if (file.isDirectory()) { this.push(file); cb(); return; }
+
+		if (file.isStream()) {
+			var originalContent = '';
+			file.contents.pipe(through2(function(content) {
+				originalContent += content.toString();
+			}));
+		}
 
 		getHash(file, options.algorithm, options.version).then(function(hash) {
 			hash = hash.substr(0, options.hashLength);
@@ -89,8 +99,15 @@ var exportObj = function(userOptions) {
 
 			file.path = path.join(path.dirname(file.path), newFilename);
 
-			callback(null, file);
-		});
+			if (file.isStream()) {
+				// Restream the contents
+				file.contents = through2();
+				file.contents.write(originalContent);
+			}
+
+			this.push(file);
+			cb();
+		}.bind(this));
 	});
 };
 
@@ -110,28 +127,30 @@ exportObj.manifest = function(manifestPath, append) {
         }
     }
 
-	return es.through(
-		function(file, callback) {
+	return through2.obj(
+		function(file, enc, cb) {
 			if (typeof file.origFilename !== 'undefined') {
 				var manifestSrc = formatManifestPath(path.join(path.dirname(file.relative), file.origFilename));
 				var manifestDest = formatManifestPath(file.relative);
 				manifest[manifestSrc] = manifestDest;
 			}
+
+			cb();
 		},
 
-		function() {
+		function(cb) {
 			var contents = {},
 			    finish;
 
 			finish = function(data) {
                 origManifestContents[manifestPath] = data;
 
-				this.queue(new gutil.File({
+				this.push(new gutil.File({
 					path: manifestPath,
 					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath]))
 				}));
 
-				this.queue(null);
+				cb();
 			}.bind(this);
 
 			if (append) {
