@@ -76,11 +76,20 @@ var exportObj = function(userOptions) {
 	return through2.obj(function(file, enc, cb) {
 		if (file.isDirectory()) { this.push(file); cb(); return; }
 
+		// Because we need the full contents to hash them, we need to read
+		// streamed contents into a buffer and later restream that
 		if (file.isStream()) {
-			var originalContent = '';
-			file.contents.pipe(through2(function(content) {
-				originalContent += content.toString();
-			}));
+			var originalContent = new Buffer(file.stat.size), pos = 0;
+
+			var originalContentDone = new Promise(function(resolve, reject) {
+				file.contents.pipe(through2(function(content, enc, cb) {
+					content.copy(originalContent, pos);
+					pos += content.length;
+					cb();
+				}, function() {
+					resolve();
+				}));
+			});
 		}
 
 		getHash(file, options.algorithm, options.version).then(function(hash) {
@@ -100,13 +109,18 @@ var exportObj = function(userOptions) {
 			file.path = path.join(path.dirname(file.path), newFilename);
 
 			if (file.isStream()) {
-				// Restream the contents
-				file.contents = through2();
-				file.contents.write(originalContent);
-			}
+				// Restream the contents once we're done reading it
+				originalContentDone.then(function() {
+					file.contents = through2();
+					file.contents.write(originalContent);
 
-			this.push(file);
-			cb();
+					this.push(file);
+					cb();
+				}.bind(this));
+			} else {
+				this.push(file);
+				cb();
+			}
 		}.bind(this));
 	});
 };
