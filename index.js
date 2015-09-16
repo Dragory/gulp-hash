@@ -1,5 +1,6 @@
 var crypto = require('crypto'),
     through2 = require('through2'),
+	gutil = require('gulp-util'),
 	assign = require('lodash.assign'),
 	template = require('lodash.template'),
 	path = require('path')
@@ -105,7 +106,7 @@ exportObj.manifest = function(manifestPath, append) {
 
 			if (append) {
                 appendQueue.then(new Promise(function(resolve, reject) {
-                    finish(extend({}, origManifestContents[manifestPath], manifest));
+                    finish(assign({}, origManifestContents[manifestPath], manifest));
                     resolve();
                 }));
 			} else {

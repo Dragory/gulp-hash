@@ -4,7 +4,7 @@ var path = require('path'),
     gutil = require('gulp-util'),
 	assert = require('assert'),
 	through2 = require('through2'),
-	hash = require('../new.js');
+	hash = require('../index.js');
 
 describe('hash()', function() {
 	it('should append the hash to files with buffer content', function(done) {
