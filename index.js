@@ -66,7 +66,7 @@ function formatManifestPath(mPath) {
 }
 
 exportObj.manifest = function(manifestPath, append) {
-	append = (typeof append === 'undefined' ? false : append);
+	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
     if (append && ! origManifestContents[manifestPath]) {
