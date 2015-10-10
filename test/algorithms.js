@@ -7,17 +7,31 @@ var path = require('path'),
 	hash = require('../index.js');
 
 describe('hash()', function() {
-	it('should append the hash to files with buffer content', function(done) {
-		gulp.src(__dirname + '/fixture.txt', {buffer: true})
+	it('should change the hash using given version (string)', function(done) {
+		gulp.src(__dirname + '/fixture.txt')
 			.pipe(hash({
 				algorithm: 'sha1',
-				hashLength: 8
+				hashLength: 8,
+        version: '1',
 			}))
 			.pipe(through2.obj(function(file) {
-				assert.equal(path.basename(file.path), 'fixture-1d229271.txt');
+				assert.equal(path.basename(file.path), 'fixture-1914dcfd.txt');
 				done();
 			}));
 	});
+
+  it('should change the hash using given version (integer)', function(done) {
+    gulp.src(__dirname + '/fixture.txt')
+      .pipe(hash({
+        algorithm: 'sha1',
+        hashLength: 8,
+        version: 1,
+      }))
+      .pipe(through2.obj(function(file) {
+        assert.equal(path.basename(file.path), 'fixture-1914dcfd.txt');
+        done();
+      }));
+  });
 
 	it('should append the hash to files with stream content', function(done) {
 		gulp.src(__dirname + '/fixture.txt', {buffer: false})
@@ -30,6 +44,18 @@ describe('hash()', function() {
 				done();
 			}));
 	});
+
+  it('should append the hash to files with buffer content', function(done) {
+    gulp.src(__dirname + '/fixture.txt', {buffer: true})
+      .pipe(hash({
+        algorithm: 'sha1',
+        hashLength: 8
+      }))
+      .pipe(through2.obj(function(file) {
+        assert.equal(path.basename(file.path), 'fixture-1d229271.txt');
+        done();
+      }));
+  });
 
 	it('should retain buffer file content', function(done) {
 		fs.readFile(__dirname + '/fixture.txt', {encoding: 'utf8'}, function(err, ref) {
