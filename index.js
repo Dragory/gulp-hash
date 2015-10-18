@@ -35,7 +35,7 @@ var exportObj = function(options) {
 			function(flushCb) {
 				if (options.version !== '') hasher.update(options.version);
 				file.hash = hasher.digest('hex').slice(0, options.hashLength);
-
+				file.origFilePath = file.path;
 				file.origFilename = path.basename(file.relative);
 				file.path = path.join(path.dirname(file.path), template(options.template, {
 					hash: file.hash,
@@ -65,7 +65,8 @@ function formatManifestPath(mPath) {
 	return path.normalize(mPath).replace(/\\/g, '/');
 }
 
-exportObj.manifest = function(manifestPath, append) {
+exportObj.manifest = function(manifestPath, append, options) {
+    options = (typeof options === 'undefined' ? {} : options);
 	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
@@ -78,11 +79,31 @@ exportObj.manifest = function(manifestPath, append) {
         }
     }
 
+    var getManifestSrc = function(file, options){
+        var ret;
+        if(options.base){
+            ret = path.relative(options.base, file.origFilePath);
+        }else{
+            ret = path.join(path.dirname(file.relative), file.origFilename);
+        }
+        return formatManifestPath(ret);
+    };
+
+    var getManifestDest = function(file, options){
+        var ret;
+        if(options.base){
+            ret = path.relative(options.base, file.path);
+        }else{
+            ret = file.relative;
+        }
+        return formatManifestPath(ret);
+    };
+
 	return through2.obj(
 		function(file, enc, cb) {
 			if (typeof file.origFilename !== 'undefined') {
-				var manifestSrc = formatManifestPath(path.join(path.dirname(file.relative), file.origFilename));
-				var manifestDest = formatManifestPath(file.relative);
+				var manifestSrc = getManifestSrc(file, options);
+				var manifestDest = getManifestDest(file, options);
 				manifest[manifestSrc] = manifestDest;
 			}
 
