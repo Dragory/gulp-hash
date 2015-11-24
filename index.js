@@ -33,7 +33,7 @@ var exportObj = function(options) {
 			},
 
 			function(flushCb) {
-				if (options.version !== '') hasher.update(options.version);
+				if (options.version !== '') hasher.update(String(options.version));
 				file.hash = hasher.digest('hex').slice(0, options.hashLength);
 
 				file.origFilename = path.basename(file.relative);
