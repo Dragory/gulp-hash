@@ -8,8 +8,6 @@ Cachebust your assets by adding a hash to the filename
 ```javascript
 var hash = require('gulp-hash');
 
-// ...
-
 gulp.src('./js/**/*.js')
 	.pipe(hash()) // Add hashes to the files' names
 	.pipe(gulp.dest('public/js')) // Write the renamed files
@@ -18,6 +16,9 @@ gulp.src('./js/**/*.js')
 ```
 
 The "manifest" is a JSON file that maps the original filenames to the renamed ones.
+
+## Streaming
+The plugin has full streaming support. If you encounter any problems, please open an issue on GitHub and I'll look into it!
 
 ## API
 ### hash(options)
