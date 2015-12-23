@@ -18,7 +18,7 @@ gulp.src('./js/**/*.js')
 The "manifest" is a JSON file that maps the original filenames to the renamed ones.
 
 ## Streaming
-The plugin has full streaming support. If you encounter any problems, please open an issue on GitHub and I'll look into it!
+The plugin fully supports both buffers and streams. If you encounter any problems, please open an issue on GitHub and I'll look into it!
 
 ## API
 ### hash(options)
