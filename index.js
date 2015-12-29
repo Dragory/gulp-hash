@@ -1,10 +1,11 @@
 var crypto = require('crypto'),
     through2 = require('through2'),
-	gutil = require('gulp-util'),
-	assign = require('lodash.assign'),
-	template = require('lodash.template'),
-	path = require('path')
-	Promise = require('es6-promise').Promise;
+    gutil = require('gulp-util'),
+    assign = require('lodash.assign'),
+    template = require('lodash.template'),
+    path = require('path'),
+    Promise = require('es6-promise').Promise,
+    fs = require('fs');
 
 var exportObj = function(options) {
 	options = assign({}, {
@@ -22,7 +23,7 @@ var exportObj = function(options) {
 		}
 
 		var fileExt = path.extname(file.relative),
-			fileName = path.basename(file.relative, fileExt);
+		    fileName = path.basename(file.relative, fileExt);
 
 		var hasher = crypto.createHash(options.algorithm);
 
@@ -69,14 +70,14 @@ exportObj.manifest = function(manifestPath, append) {
 	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
-    if (append && ! origManifestContents[manifestPath]) {
-        try {
-            var content = fs.readFileSync(manifestPath, {encoding: 'utf8'});
-            origManifestContents[manifestPath] = JSON.parse(content);
-        } catch (e) {
-            origManifestContents[manifestPath] = {};
-        }
-    }
+	if (append && ! origManifestContents[manifestPath]) {
+		try {
+			var content = fs.readFileSync(manifestPath, {encoding: 'utf8'});
+			origManifestContents[manifestPath] = JSON.parse(content);
+		} catch (e) {
+			origManifestContents[manifestPath] = {};
+		}
+	}
 
 	return through2.obj(
 		function(file, enc, cb) {
@@ -90,11 +91,8 @@ exportObj.manifest = function(manifestPath, append) {
 		},
 
 		function(cb) {
-			var contents = {},
-			    finish;
-
-			finish = function(data) {
-                origManifestContents[manifestPath] = data;
+			var finish = function(data) {
+				origManifestContents[manifestPath] = data;
 
 				this.push(new gutil.File({
 					path: manifestPath,
@@ -105,10 +103,10 @@ exportObj.manifest = function(manifestPath, append) {
 			}.bind(this);
 
 			if (append) {
-                appendQueue.then(new Promise(function(resolve, reject) {
-                    finish(assign({}, origManifestContents[manifestPath], manifest));
-                    resolve();
-                }));
+				appendQueue.then(new Promise(function(resolve) {
+					finish(assign({}, origManifestContents[manifestPath], manifest));
+					resolve();
+				}));
 			} else {
 				finish(manifest);
 			}
