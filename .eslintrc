@@ -1,0 +1,16 @@
+{
+	"root": true,
+
+	"extends": "eslint:recommended",
+
+	"ecmaFeatures": {},
+	"env": {
+		"node": true
+	},
+	"rules": {
+		"eqeqeq": [2, "smart"],
+		"no-shadow": 0,
+		"strict": 0,
+		"no-mixed-spaces-and-tabs": [2, "smart-tabs"]
+	}
+}
