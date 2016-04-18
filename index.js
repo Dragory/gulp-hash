@@ -66,7 +66,7 @@ function formatManifestPath(mPath) {
 	return path.normalize(mPath).replace(/\\/g, '/');
 }
 
-exportObj.manifest = function(manifestPath, append) {
+exportObj.manifest = function(manifestPath, append, space) {
 	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
@@ -96,7 +96,7 @@ exportObj.manifest = function(manifestPath, append) {
 
 				this.push(new gutil.File({
 					path: manifestPath,
-					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath]))
+					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath], undefined, space))
 				}));
 
 				cb();
