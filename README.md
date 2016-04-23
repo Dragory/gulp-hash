@@ -30,12 +30,13 @@ The plugin fully supports both buffers and streams. If you encounter any problem
 | template | `'<%= name %>-<%= hash %><%= ext %>'` | The template used when adding the hash |
 | version | '' | A key to change the files' hashes without actually changing their content; appended to the contents when hashing |
 
-### hash.manifest(manifestPath, append)
+### hash.manifest(manifestPath, append, space)
 
-| Option | Default | Description |
-| ------ | ------- | ----------- |
-| manifestPath | <none> | The desired path to the manifest file |
-| append | true | Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
+| Parameter | Default | Description |
+| --------- | ------- | ----------- |
+| manifestPath | (none) | The desired path to the manifest file |
+| append | true | (optional) Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
+| space | undefined | (optional) [The space parameter for JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)|
 
 [npm-url]: https://www.npmjs.org/package/gulp-hash
 [npm-image]: https://badge.fury.io/js/gulp-hash.svg
