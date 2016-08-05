@@ -12,9 +12,7 @@ var exportObj = function(options) {
 		algorithm: 'sha1',
 		hashLength: 8,
 		template: '<%= name %>-<%= hash %><%= ext %>',
-		version: '',
-		//can hashmap contains extesion defalut:false, its' original settings, if it's true, hashmap.json do not contain any extensions
-		extension: false
+		version: ''
 	}, options);
 
 	return through2.obj(function(file, enc, cb) {
@@ -68,7 +66,8 @@ function formatManifestPath(mPath) {
 	return path.normalize(mPath).replace(/\\/g, '/');
 }
 
-exportObj.manifest = function(manifestPath, append, space) {
+//if manifest need extension, please set the last argument a value,ex:true
+exportObj.manifest = function(manifestPath, append, space, extension) {
 	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
@@ -86,7 +85,7 @@ exportObj.manifest = function(manifestPath, append, space) {
 			if (typeof file.origFilename !== 'undefined') {
 				var manifestSrc = formatManifestPath(path.join(path.dirname(file.relative), file.origFilename));
 				var manifestDest = formatManifestPath(file.relative);
-				if (options.extension){
+				if (extension){
 					manifestSrc = manifestSrc.substr(0, manifestSrc.lastIndexOf('.'));
 					manifestDest = manifestDest.substr(0, manifestDest.lastIndexOf('.'));
 				}
