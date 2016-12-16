@@ -37,7 +37,7 @@ var exportObj = function(options) {
 				if (options.version !== '') hasher.update(String(options.version));
 				file.hash = hasher.digest('hex').slice(0, options.hashLength);
 
-				file.origFilename = path.basename(file.relative);
+				file.origPath = file.relative;
 				file.path = path.join(path.dirname(file.path), template(options.template, {
 					hash: file.hash,
 					name: fileName,
@@ -81,8 +81,8 @@ exportObj.manifest = function(manifestPath, append, space) {
 
 	return through2.obj(
 		function(file, enc, cb) {
-			if (typeof file.origFilename !== 'undefined') {
-				var manifestSrc = formatManifestPath(path.join(path.dirname(file.relative), file.origFilename));
+			if (typeof file.origPath !== 'undefined') {
+				var manifestSrc = formatManifestPath(file.origPath);
 				var manifestDest = formatManifestPath(file.relative);
 				manifest[manifestSrc] = manifestDest;
 			}
