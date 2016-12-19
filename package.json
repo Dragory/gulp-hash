@@ -13,6 +13,13 @@
     "name": "Miikka Virtanen",
     "email": "contact@mivir.fi"
   },
+  "contributors": [
+    {"name": "https://github.com/coen-hyde"},
+    {"name": "https://github.com/jorrit"},
+    {"name": "https://github.com/ai"},
+    {"name": "https://github.com/othree"},
+    {"name": "https://github.com/outpunk"}
+  ],
   "homepage": "https://github.com/Dragory/gulp-hash",
   "repository": {
     "type": "git",
