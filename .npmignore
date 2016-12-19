@@ -1,2 +1,6 @@
 /node_modules
 /test
+.eslintrc
+.npmignore
+.travis.yml
+CHANGELOG.md
