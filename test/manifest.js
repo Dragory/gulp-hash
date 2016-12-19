@@ -21,27 +21,46 @@ describe('hash.manifest()', function() {
 			}));
 	});
 
+	it('should support changing output paths', function(done) {
+		gulp.src(__dirname + '/fixture.txt')
+			.pipe(hash({
+				algorithm: 'sha1',
+				hashLength: 8,
+				template: 'out/<%= name %>-<%= hash %><%= ext %>'
+			}))
+			.pipe(hash.manifest(''))
+			.pipe(through2.obj(function(file) {
+				var err = null;
+				try {
+					assert.equal(file.contents.toString(), JSON.stringify({
+						"fixture.txt": "out/fixture-1d229271.txt"
+					}));
+				} catch(e) { err = e; }
+				done(err);
+			}));
+	});
+
 	it('the append option should work and use a queue', function(done) {
 		var fakeFile = new gutil.File({
 			contents: new Buffer('Hello'),
 			path: 'file-f7ff9e8b.txt'
 		});
 
-		fakeFile.origFilename = 'file.txt';
+		fakeFile.origPath = 'file.txt';
 
 		var fakeFile2 = new gutil.File({
 			contents: new Buffer('Hello'),
 			path: 'foo-123.txt'
 		});
 
-		fakeFile2.origFilename = 'foo.txt';
+		fakeFile2.origPath = 'foo.txt';
 
 		var fakeFile3 = new gutil.File({
 			contents: new Buffer('Hello'),
 			path: 'foo-456.txt'
 		});
 
-		fakeFile3.origFilename = 'foo.txt';
+		fakeFile3.origPath = 'foo.txt';
 
 		// First this sets manifest content to {"file.txt":"file-f7ff9e8b.txt"}
 		var manifestStream = hash.manifest('a', true);
