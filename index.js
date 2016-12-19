@@ -66,7 +66,8 @@ function formatManifestPath(mPath) {
 	return path.normalize(mPath).replace(/\\/g, '/');
 }
 
-exportObj.manifest = function(manifestPath, append, space) {
+//if manifest need extension, please set the last argument a value,ex:true
+exportObj.manifest = function(manifestPath, append, space, extension) {
 	append = (typeof append === 'undefined' ? true : append);
 	var manifest = {};
 
@@ -84,6 +85,10 @@ exportObj.manifest = function(manifestPath, append, space) {
 			if (typeof file.origPath !== 'undefined') {
 				var manifestSrc = formatManifestPath(file.origPath);
 				var manifestDest = formatManifestPath(file.relative);
+				if (extension){
+					manifestSrc = manifestSrc.substr(0, manifestSrc.lastIndexOf('.'));
+					manifestDest = manifestDest.substr(0, manifestDest.lastIndexOf('.'));
+				}
 				manifest[manifestSrc] = manifestDest;
 			}
 
