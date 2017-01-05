@@ -1,6 +1,6 @@
 {
-  "name": "gulp-hash",
-  "version": "4.0.1",
+  "name": "gulp-hash-cleanup",
+  "version": "1.0.0",
   "description": "Cachebust your assets by adding a hash to the filename",
   "license": "MIT",
   "keywords": [
@@ -10,8 +10,8 @@
     "gulpplugin"
   ],
   "author": {
-    "name": "Miikka Virtanen",
-    "email": "contact@mivir.fi"
+    "name": "Ihor Omelchenko",
+    "email": "megapixel23@gmail.com"
   },
   "contributors": [
     {
@@ -30,7 +30,7 @@
       "name": "https://github.com/outpunk"
     }
   ],
-  "homepage": "https://github.com/Dragory/gulp-hash",
+  "homepage": "https://github.com/MEGApixel23/gulp-hash",
   "repository": {
     "type": "git",
     "url": "git@github.com:Dragory/gulp-hash.git"
