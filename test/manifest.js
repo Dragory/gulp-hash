@@ -3,7 +3,8 @@ var path = require('path'),
 	gutil = require('gulp-util'),
 	through2 = require('through2'),
 	assert = require('assert'),
-	hash = require('../index.js');
+	hash = require('../index.js'),
+	fs = require('fs');
 
 describe('hash.manifest()', function() {
 	it('should generate valid manifest file', function(done) {
@@ -90,4 +91,51 @@ describe('hash.manifest()', function() {
 		stream3.write(fakeFile3);
 		stream3.end();
 	});
+
+	it('should delete old processed filed if original file was changed', function(done) {
+    var originalContent = 'Original content';
+    var changedContent = 'Changed content';
+		var outputDirPath = __dirname + '/temp';
+		var filePath = outputDirPath + '/test_file.txt';
+		var firstOutputPath = outputDirPath + '/test_file-b9d5922c.txt';
+		var secondOutputPath = outputDirPath + '/test_file-93d79001.txt';
+
+		var cleanup = function() {
+      fs.existsSync(firstOutputPath) && fs.unlinkSync(firstOutputPath);
+      fs.existsSync(secondOutputPath) && fs.unlinkSync(secondOutputPath);
+      fs.existsSync(filePath) && fs.unlinkSync(filePath);
+		};
+
+    cleanup();
+
+    fs.writeFileSync(filePath, originalContent);
+
+    gulp.src(filePath)
+      .pipe(hash())
+      .pipe(gulp.dest(outputDirPath))
+      .pipe(hash.manifest('a'))
+
+      .pipe(through2.obj(function() {
+        fs.writeFileSync(filePath, changedContent);
+
+        gulp.src(filePath)
+          .pipe(hash())
+        	.pipe(gulp.dest(outputDirPath))
+          .pipe(hash.manifest('a', {
+          	deleteOld: true,
+            sourceDir: (outputDirPath)
+					}))
+          .pipe(through2.obj(function() {
+            var err = null;
+
+            try {
+              assert.equal(fs.existsSync(firstOutputPath), false, 'First file should be delete');
+              assert.equal(fs.readFileSync(secondOutputPath), changedContent, 'Second file should have correct content');
+            } catch (e) { err = e; }
+
+            cleanup();
+            done(err);
+          }));
+      }));
+	})
 });
