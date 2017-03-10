@@ -92,11 +92,11 @@ exportObj.manifest = function(manifestPath, options) {
     }
   }
 
-  function deleteOldFiles(oldfiles, newFiles, dirPath) {
-    for (var prop in oldfiles) {
-      if (newFiles.hasOwnProperty(prop) === false || oldfiles[prop] !== newFiles[prop]) {
+  function deleteOldFiles(oldFiles, newFiles, dirPath) {
+    for (var prop in oldFiles) {
+      if (newFiles.hasOwnProperty(prop) === false || oldFiles[prop] !== newFiles[prop]) {
         try {
-          fs.unlinkSync(dirPath + '/' + oldfiles[prop]);
+          fs.unlinkSync(dirPath + '/' + oldFiles[prop]);
         } catch (e) {
           console.warn(e.message);
         }
