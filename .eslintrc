@@ -11,6 +11,7 @@
 		"eqeqeq": [2, "smart"],
 		"no-shadow": 0,
 		"strict": 0,
-		"no-mixed-spaces-and-tabs": [2, "smart-tabs"]
+		"no-mixed-spaces-and-tabs": [2, "smart-tabs"],
+		"no-console": 0
 	}
 }
