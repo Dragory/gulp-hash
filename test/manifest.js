@@ -113,7 +113,6 @@ describe('hash.manifest()', function() {
 				fs.existsSync(testFile2HashedOrig) && fs.unlinkSync(testFile2HashedOrig);
 			}
 
-			// Start by hashing them both
 			gulp.src([testFile1, testFile2])
 				.pipe(hash())
 				.pipe(gulp.dest(tempDir))
@@ -147,11 +146,11 @@ describe('hash.manifest()', function() {
 
 		it('should delete files that are missing from the new manifest', function(done) {
 			var tempDir = path.join(__dirname, 'temp');
-			var testFile1 = path.join(tempDir, 'test-file-1.dat');
-			var testFile2 = path.join(tempDir, 'test-file-2.dat');
+			var testFile1 = path.join(tempDir, 'test-file-a.dat');
+			var testFile2 = path.join(tempDir, 'test-file-b.dat');
 
-			var testFile1Hashed = path.join(tempDir, 'test-file-1-f8e79b07.dat');
-			var testFile2Hashed = path.join(tempDir, 'test-file-2-09df3c37.dat');
+			var testFile1Hashed = path.join(tempDir, 'test-file-a-f8e79b07.dat');
+			var testFile2Hashed = path.join(tempDir, 'test-file-b-09df3c37.dat');
 
 			fs.writeFileSync(testFile1, 'dummy contents');
 			fs.writeFileSync(testFile2, 'dummy contents 2');
