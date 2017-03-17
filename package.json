@@ -28,7 +28,10 @@
     },
     {
       "name": "https://github.com/outpunk"
-    }
+    },
+		{
+		  "name": "https://github.com/MEGApixel23"
+		}
   ],
   "homepage": "https://github.com/Dragory/gulp-hash",
   "repository": {
