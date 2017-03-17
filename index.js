@@ -1,11 +1,11 @@
 var crypto = require('crypto'),
-		through2 = require('through2'),
-		gutil = require('gulp-util'),
-		assign = require('lodash.assign'),
-		template = require('lodash.template'),
-		path = require('path'),
-		Promise = require('es6-promise').Promise,
-		fs = require('fs');
+    through2 = require('through2'),
+    gutil = require('gulp-util'),
+    assign = require('lodash.assign'),
+    template = require('lodash.template'),
+    path = require('path'),
+    Promise = require('es6-promise').Promise,
+    fs = require('fs');
 
 var exportObj = function(options) {
 	options = assign({}, {
@@ -99,7 +99,7 @@ exportObj.manifest = function(manifestPath, options) {
 		for (var prop in oldFiles) {
 			if (newFiles.hasOwnProperty(prop) === false || oldFiles[prop] !== newFiles[prop]) {
 				try {
-					fs.unlinkSync(dirPath + '/' + oldFiles[prop]);
+					fs.unlinkSync(path.join(dirPath, oldFiles[prop]));
 				} catch (e) {
 					console.warn(e.message);
 				}
