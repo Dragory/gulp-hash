@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.1.0
+Thanks to PR #18 from @MEGApixel23:
+* New signature for hash.manifest: `hash.manifest(manifestPath, options)`
+  * Old signature `hash.manifest(manifestPath, append, space)` is still supported
+* New options for `hash.manifest`:
+  * `deleteOld` Deletes old hashed files mentioned in the manifest. This includes both files with different hashes and files that have been removed from the manifest.
+  * `sourceDir` Used with `deleteOld`. Specifies the directory where to delete old hashed files from.
+
 ## 4.0.1
 * Update contributor and changelog info for npm
 

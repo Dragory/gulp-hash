@@ -33,29 +33,23 @@ The plugin fully supports both buffers and streams. If you encounter any problem
 | template | `'<%= name %>-<%= hash %><%= ext %>'` | The template used when adding the hash |
 | version | '' | A key to change the files' hashes without actually changing their content; appended to the contents when hashing |
 
-### hash.manifest(manifestPath, append, space) - option 1
+### hash.manifest(manifestPath, options)
+
+| Parameter | Default | Description |
+| --------- | ------- | ----------- |
+| manifestPath | (none) | The desired path to the manifest file |
+| options.append | true | Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
+| options.space | null | [The space parameter for JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)|
+| options.deleteOld | false | If set to `true`, deletes old versions of hashed files |
+| options.sourceDir | __dirname | Used with `deleteOld`. Specifies where to search for old files to delete. |
+
+### hash.manifest(manifestPath, append, space)
 
 | Parameter | Default | Description |
 | --------- | ------- | ----------- |
 | manifestPath | (none) | The desired path to the manifest file |
 | append | true | (optional) Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
 | space | undefined | (optional) [The space parameter for JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)|
-
-[npm-url]: https://www.npmjs.org/package/gulp-hash
-[npm-image]: https://badge.fury.io/js/gulp-hash.svg
-
-[travis-url]: https://travis-ci.org/Dragory/gulp-hash
-[travis-image]: https://api.travis-ci.org/Dragory/gulp-hash.svg
-
-### hash.manifest(manifestPath, options) - option 2
-
-| Parameter | Default | Description |
-| --------- | ------- | ----------- |
-| manifestPath | (none) | The desired path to the manifest file |
-| options.append | true | (optional) Whether to merge the new manifest with an existing one's contents (same filename, doesn't have to exist before first run) |
-| options.space | undefined | (optional) [The space parameter for JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)|
-| options.deleteOld | false | Delete old hashed file is original file is changed |
-| options.sourceDir | undefined | Path to output directory of hashed files. Is used if ```deleteOld``` parameter is set to ```true```
 
 [npm-url]: https://www.npmjs.org/package/gulp-hash
 [npm-image]: https://badge.fury.io/js/gulp-hash.svg
