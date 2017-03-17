@@ -1,5 +1,5 @@
 var path = require('path'),
-	gulp = require('gulp'),
+    gulp = require('gulp'),
 	gutil = require('gulp-util'),
 	through2 = require('through2'),
 	assert = require('assert'),
@@ -92,50 +92,104 @@ describe('hash.manifest()', function() {
 		stream3.end();
 	});
 
-	it('should delete old processed filed if original file was changed', function(done) {
-    var originalContent = 'Original content';
-    var changedContent = 'Changed content';
-		var outputDirPath = __dirname + '/temp';
-		var filePath = outputDirPath + '/test_file.txt';
-		var firstOutputPath = outputDirPath + '/test_file-b9d5922c.txt';
-		var secondOutputPath = outputDirPath + '/test_file-93d79001.txt';
+	describe('deleteOld', function() {
+		it('should delete files that have a different hash', function(done) {
+			var tempDir = path.join(__dirname, 'temp');
+			var testFile1 = path.join(tempDir, 'test-file-1.dat');
+			var testFile2 = path.join(tempDir, 'test-file-2.dat');
 
-		var cleanup = function() {
-      fs.existsSync(firstOutputPath) && fs.unlinkSync(firstOutputPath);
-      fs.existsSync(secondOutputPath) && fs.unlinkSync(secondOutputPath);
-      fs.existsSync(filePath) && fs.unlinkSync(filePath);
-		};
+			var testFile1HashedOrig = path.join(tempDir, 'test-file-1-f8e79b07.dat');
+			var testFile1HashedNew = path.join(tempDir, 'test-file-1-3e56ecec.dat');
+			var testFile2HashedOrig = path.join(tempDir, 'test-file-2-09df3c37.dat');
 
-    cleanup();
+			fs.writeFileSync(testFile1, 'dummy contents');
+			fs.writeFileSync(testFile2, 'dummy contents 2');
 
-    fs.writeFileSync(filePath, originalContent);
+			function cleanup() {
+				fs.existsSync(testFile1) && fs.unlinkSync(testFile1);
+				fs.existsSync(testFile2) && fs.unlinkSync(testFile2);
+				fs.existsSync(testFile1HashedOrig) && fs.unlinkSync(testFile1HashedOrig);
+				fs.existsSync(testFile1HashedNew) && fs.unlinkSync(testFile1HashedNew);
+				fs.existsSync(testFile2HashedOrig) && fs.unlinkSync(testFile2HashedOrig);
+			}
 
-    gulp.src(filePath)
-      .pipe(hash())
-      .pipe(gulp.dest(outputDirPath))
-      .pipe(hash.manifest('a'))
+			// Start by hashing them both
+			gulp.src([testFile1, testFile2])
+				.pipe(hash())
+				.pipe(gulp.dest(tempDir))
+				.pipe(hash.manifest('a'))
 
-      .pipe(through2.obj(function() {
-        fs.writeFileSync(filePath, changedContent);
+				.pipe(through2.obj(function() {
+					fs.writeFileSync(testFile1, 'dummy contents changed');
 
-        gulp.src(filePath)
-          .pipe(hash())
-        	.pipe(gulp.dest(outputDirPath))
-          .pipe(hash.manifest('a', {
-          	deleteOld: true,
-            sourceDir: (outputDirPath)
-					}))
-          .pipe(through2.obj(function() {
-            var err = null;
+					gulp.src(testFile1)
+						.pipe(hash())
+						.pipe(gulp.dest(tempDir))
+						.pipe(hash.manifest('a', {
+							append: true,
+							deleteOld: true,
+							sourceDir: tempDir
+						}))
+						.pipe(through2.obj(function() {
+							var err = null;
 
-            try {
-              assert.equal(fs.existsSync(firstOutputPath), false, 'First file should be delete');
-              assert.equal(fs.readFileSync(secondOutputPath), changedContent, 'Second file should have correct content');
-            } catch (e) { err = e; }
+							try {
+								assert.equal(fs.existsSync(testFile1HashedOrig), false, 'Original hashed file 1 is removed');
+								assert.equal(fs.existsSync(testFile1HashedNew), true, 'New hashed file 1 exists');
+								assert.equal(fs.existsSync(testFile2HashedOrig), true, 'Original hashed file 2 exists');
+							} catch (e) { err = e; }
 
-            cleanup();
-            done(err);
-          }));
-      }));
-	})
+							cleanup();
+							done(err);
+						}));
+				}));
+		});
+
+		it('should delete files that are missing from the new manifest', function(done) {
+			var tempDir = path.join(__dirname, 'temp');
+			var testFile1 = path.join(tempDir, 'test-file-1.dat');
+			var testFile2 = path.join(tempDir, 'test-file-2.dat');
+
+			var testFile1Hashed = path.join(tempDir, 'test-file-1-f8e79b07.dat');
+			var testFile2Hashed = path.join(tempDir, 'test-file-2-09df3c37.dat');
+
+			fs.writeFileSync(testFile1, 'dummy contents');
+			fs.writeFileSync(testFile2, 'dummy contents 2');
+
+			function cleanup() {
+				fs.existsSync(testFile1) && fs.unlinkSync(testFile1);
+				fs.existsSync(testFile2) && fs.unlinkSync(testFile2);
+				fs.existsSync(testFile1Hashed) && fs.unlinkSync(testFile1Hashed);
+				fs.existsSync(testFile2Hashed) && fs.unlinkSync(testFile2Hashed);
+			}
+
+			// Start by hashing them both
+			gulp.src([testFile1, testFile2])
+				.pipe(hash())
+				.pipe(gulp.dest(tempDir))
+				.pipe(hash.manifest('a'))
+
+				.pipe(through2.obj(function() {
+					gulp.src(testFile1)
+						.pipe(hash())
+						.pipe(gulp.dest(tempDir))
+						.pipe(hash.manifest('a', {
+							append: false,
+							deleteOld: true,
+							sourceDir: tempDir
+						}))
+						.pipe(through2.obj(function() {
+							var err = null;
+
+							try {
+								assert.equal(fs.existsSync(testFile1Hashed), true, 'Hashed file 1 exists');
+								assert.equal(fs.existsSync(testFile2Hashed), false, 'Hashed file 2 was missing from manifest and removed');
+							} catch (e) { err = e; }
+
+							cleanup();
+							done(err);
+						}));
+				}));
+		});
+	});
 });
