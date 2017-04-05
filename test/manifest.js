@@ -8,6 +8,8 @@ var path = require('path'),
 
 describe('hash.manifest()', function() {
 	it('should generate valid manifest file', function(done) {
+		hash.resetManifestCache();
+
 		gulp.src(__dirname + '/fixture.txt')
 			.pipe(hash({
 				algorithm: 'sha1',
@@ -23,6 +25,8 @@ describe('hash.manifest()', function() {
 	});
 
 	it('should support changing output paths', function(done) {
+		hash.resetManifestCache();
+
 		gulp.src(__dirname + '/fixture.txt')
 			.pipe(hash({
 				algorithm: 'sha1',
@@ -42,6 +46,8 @@ describe('hash.manifest()', function() {
 	});
 
 	it('the append option should work and use a queue', function(done) {
+		hash.resetManifestCache();
+
 		var fakeFile = new gutil.File({
 			contents: new Buffer('Hello'),
 			path: 'file-f7ff9e8b.txt'
@@ -94,6 +100,8 @@ describe('hash.manifest()', function() {
 
 	describe('deleteOld', function() {
 		it('should delete files that have a different hash', function(done) {
+			hash.resetManifestCache();
+
 			var tempDir = path.join(__dirname, 'temp');
 			var testFile1 = path.join(tempDir, 'test-file-1.dat');
 			var testFile2 = path.join(tempDir, 'test-file-2.dat');
@@ -145,6 +153,8 @@ describe('hash.manifest()', function() {
 		});
 
 		it('should delete files that are missing from the new manifest', function(done) {
+			hash.resetManifestCache();
+
 			var tempDir = path.join(__dirname, 'temp');
 			var testFile1 = path.join(tempDir, 'test-file-a.dat');
 			var testFile2 = path.join(tempDir, 'test-file-b.dat');
@@ -161,6 +171,8 @@ describe('hash.manifest()', function() {
 				fs.existsSync(testFile1Hashed) && fs.unlinkSync(testFile1Hashed);
 				fs.existsSync(testFile2Hashed) && fs.unlinkSync(testFile2Hashed);
 			}
+
+			hash.resetManifestCache();
 
 			// Start by hashing them both
 			gulp.src([testFile1, testFile2])

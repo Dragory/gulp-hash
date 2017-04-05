@@ -68,7 +68,7 @@ function formatManifestPath(mPath) {
 
 exportObj.manifest = function(manifestPath, options) {
 	var space = null;
-	var append = false;
+	var append = true;
 	var sourceDir = __dirname;
 	var deleteOld = false;
 
@@ -144,6 +144,10 @@ exportObj.manifest = function(manifestPath, options) {
 			}
 		}
 	);
+};
+
+exportObj.resetManifestCache = function() {
+	origManifestContents = {};
 };
 
 module.exports = exportObj;
