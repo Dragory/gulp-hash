@@ -111,7 +111,7 @@ exportObj.manifest = function(manifestPath, options) {
 		function(file, enc, cb) {
 			if (typeof file.origPath !== 'undefined') {
 				var manifestSrc = formatManifestPath(file.origPath);
-				var manifestDest = formatManifestPath(file.relative);
+				var manifestDest = formatManifestPath(path.join(sourceDir, file.relative))
 				newManifest[manifestSrc] = manifestDest;
 			}
 
