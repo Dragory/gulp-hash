@@ -56,7 +56,6 @@ var exportObj = function(options) {
 			file.contents.pipe(newContents);
 			file.contents = newContents;
 		} else if (file.isBuffer()) {
-			//console.dir(file);
 			stream.end(file.contents);
 		} else {
 			stream.end();
