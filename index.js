@@ -1,6 +1,6 @@
 var crypto = require('crypto'),
     through2 = require('through2'),
-    gutil = require('gulp-util'),
+    Vinyl = require('vinyl'),
     assign = require('lodash.assign'),
     template = require('lodash.template'),
     path = require('path'),
@@ -27,7 +27,8 @@ var exportObj = function(options) {
 
 		var hasher = crypto.createHash(options.algorithm);
 
-		var piped = file.pipe(through2(
+		var opt = {end: true};
+		var stream = through2(
 			function(chunk, enc, updateCb) {
 				hasher.update(chunk);
 				updateCb(null, chunk);
@@ -48,12 +49,17 @@ var exportObj = function(options) {
 				cb();
 				flushCb();
 			}.bind(this)
-		));
-
+		);
 		if (file.isStream()) {
+			file.contents = file.contents.pipe(stream, opt);
 			var newContents = through2();
-			piped.pipe(newContents);
+			file.contents.pipe(newContents);
 			file.contents = newContents;
+		} else if (file.isBuffer()) {
+			//console.dir(file);
+			stream.end(file.contents);
+		} else {
+			stream.end();
 		}
 	});
 };
@@ -126,7 +132,7 @@ exportObj.manifest = function(manifestPath, options) {
 
 				origManifestContents[manifestPath] = data;
 
-				this.push(new gutil.File({
+				this.push(new Vinyl({
 					path: manifestPath,
 					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath], undefined, space))
 				}));

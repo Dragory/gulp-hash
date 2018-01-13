@@ -1,6 +1,6 @@
 var path = require('path'),
     gulp = require('gulp'),
-	gutil = require('gulp-util'),
+		Vinyl = require('vinyl'),
 	through2 = require('through2'),
 	assert = require('assert'),
 	hash = require('../index.js'),
@@ -48,21 +48,21 @@ describe('hash.manifest()', function() {
 	it('the append option should work and use a queue', function(done) {
 		hash.resetManifestCache();
 
-		var fakeFile = new gutil.File({
+		var fakeFile = new Vinyl({
 			contents: new Buffer('Hello'),
 			path: 'file-f7ff9e8b.txt'
 		});
 
 		fakeFile.origPath = 'file.txt';
 
-		var fakeFile2 = new gutil.File({
+		var fakeFile2 = new Vinyl({
 			contents: new Buffer('Hello'),
 			path: 'foo-123.txt'
 		});
 
 		fakeFile2.origPath = 'foo.txt';
 
-		var fakeFile3 = new gutil.File({
+		var fakeFile3 = new Vinyl({
 			contents: new Buffer('Hello'),
 			path: 'foo-456.txt'
 		});
