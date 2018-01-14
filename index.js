@@ -91,7 +91,7 @@ exportObj.manifest = function(manifestPath, options) {
 
 	var newManifest = {};
 
-	if (append && ! origManifestContents[manifestPath]) {
+	if ((append || deleteOld) && ! origManifestContents[manifestPath]) {
 		try {
 			var content = fs.readFileSync(manifestPath, {encoding: 'utf8'});
 			origManifestContents[manifestPath] = JSON.parse(content);
