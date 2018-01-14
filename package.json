@@ -1,6 +1,6 @@
 {
   "name": "gulp-hash",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Cachebust your assets by adding a hash to the filename",
   "license": "MIT",
   "keywords": [
