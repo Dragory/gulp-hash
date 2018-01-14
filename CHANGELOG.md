@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.2.0
+Thanks to PR #27 from @migolo:
+* Replace deprecated gulp-util with Vinyl
+  * This should allow the plugin to work on Gulp 4
+
 ## 4.1.0
 Thanks to PR #18 from @MEGApixel23:
 * New signature for hash.manifest: `hash.manifest(manifestPath, options)`
