@@ -1,7 +1,6 @@
 var path = require('path'),
     fs = require('fs'),
     gulp = require('gulp'),
-    gutil = require('gulp-util'),
 	assert = require('assert'),
 	through2 = require('through2'),
 	hash = require('../index.js');
