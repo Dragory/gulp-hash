@@ -11,14 +11,16 @@ var hash = require('gulp-hash');
 gulp.src('./js/**/*.js')
 	.pipe(hash()) // Add hashes to the files' names
 	.pipe(gulp.dest('public/js')) // Write the renamed files
-	.pipe(hash.manifest('assets.json', {
+	.pipe(hash.manifest('public/assets.json', { // Generate the manifest file
 	  deleteOld: true,
 	  sourceDir: __dirname + '/public/js'
-	})) // Switch to the manifest file
-	.pipe(gulp.dest('public')); // Write the manifest file
+	}))
+	.pipe(gulp.dest('.')); // Write the manifest file (see note below)
 ```
 
 The "manifest" is a JSON file that maps the original filenames to the renamed ones.
+
+**Note:** It is recommended to use the full relative path to the manifest file in `hash.manifest()` as opposed to setting it in `gulp.dest()`. This is so the `append` option is able find the original manifest file. The example above demonstrates this.
 
 ## Streaming
 The plugin fully supports both buffers and streams. If you encounter any problems, please open an issue on GitHub and I'll look into it!
