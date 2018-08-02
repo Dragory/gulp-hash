@@ -12,7 +12,8 @@ var exportObj = function(options) {
 		algorithm: 'sha1',
 		hashLength: 8,
 		template: '<%= name %>-<%= hash %><%= ext %>',
-		version: ''
+		version: '',
+		dummyHash: false
 	}, options);
 
 	return through2.obj(function(file, enc, cb) {
@@ -35,8 +36,8 @@ var exportObj = function(options) {
 			},
 
 			function(flushCb) {
-				if (options.version !== '') hasher.update(String(options.version));
-				file.hash = hasher.digest('hex').slice(0, options.hashLength);
+				if (options.version !== '' && !options.dummyHash) hasher.update(String(options.version));
+				file.hash = (options.dummyHash) ? '0'.repeat(options.hashLength) : hasher.digest('hex').slice(0, options.hashLength);
 
 				file.origPath = file.relative;
 				file.path = path.join(path.dirname(file.path), template(options.template, {
