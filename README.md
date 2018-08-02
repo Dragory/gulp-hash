@@ -34,6 +34,7 @@ The plugin fully supports both buffers and streams. If you encounter any problem
 | hashLength | 8 | The length of the hash to add to the file's name (slice from the start of the full hash) |
 | template | `'<%= name %>-<%= hash %><%= ext %>'` | The template used when adding the hash |
 | version | '' | A key to change the files' hashes without actually changing their content; appended to the contents when hashing |
+| dummyHash | false | If set to `true`, hash value will always be a string of zeroes regardless of file contents (with length of hash determined by the `hashLength` option) |
 
 ### hash.manifest(manifestPath, options)
 
