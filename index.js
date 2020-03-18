@@ -133,7 +133,7 @@ exportObj.manifest = function(manifestPath, options) {
 
 				this.push(new Vinyl({
 					path: manifestPath,
-					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath], undefined, space))
+					contents: Buffer.from(JSON.stringify(origManifestContents[manifestPath], undefined, space))
 				}));
 
 				cb();
