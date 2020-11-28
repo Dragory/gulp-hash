@@ -49,21 +49,21 @@ describe('hash.manifest()', function() {
 		hash.resetManifestCache();
 
 		var fakeFile = new Vinyl({
-			contents: new Buffer('Hello'),
+			contents: Buffer.from('Hello'),
 			path: 'file-f7ff9e8b.txt'
 		});
 
 		fakeFile.origPath = 'file.txt';
 
 		var fakeFile2 = new Vinyl({
-			contents: new Buffer('Hello'),
+			contents: Buffer.from('Hello'),
 			path: 'foo-123.txt'
 		});
 
 		fakeFile2.origPath = 'foo.txt';
 
 		var fakeFile3 = new Vinyl({
-			contents: new Buffer('Hello'),
+			contents: Buffer.from('Hello'),
 			path: 'foo-456.txt'
 		});
 
