@@ -2,6 +2,7 @@ var path = require('path'),
     fs = require('fs'),
     gulp = require('gulp'),
 	assert = require('assert'),
+	stream = require('stream'),
 	through2 = require('through2'),
 	hash = require('../index.js');
 
@@ -64,10 +65,17 @@ describe('hash()', function() {
 					hashLength: 8
 				}))
 				.pipe(through2.obj(function(file) {
-					file.pipe(through2.obj(function(content) {
-						assert.equal(content.toString(), ref);
-						done();
-					}));
+					if (file.isBuffer()) {
+						const bufferStream = new stream.PassThrough();
+						bufferStream.end(file.contents)
+						bufferStream.pipe(through2.obj(function(content) {
+							assert.equal(content.toString(), ref);
+							done();
+						}));
+						bufferStream.end();
+					} else {
+						done(new Error("file should be a Buffer"));
+					}
 				}));
 		});
 	});
@@ -81,16 +89,20 @@ describe('hash()', function() {
 				}))
 				.pipe(through2.obj(function(file) {
 					var content = "";
-					file.pipe(through2(
-						function(chunk, enc, cb) {
-							content += chunk.toString();
-							cb();
-						},
-						function() {
-							assert.equal(content, ref);
-							done();
-						}
-					));
+					if (file.isStream()) {
+						file.contents.pipe(through2(
+							function(chunk, enc, cb) {
+								content += chunk.toString();
+								cb();
+							},
+							function() {
+								assert.equal(content, ref);
+								done();
+							}
+						));
+					} else {
+						done(new Error("file should be a Stream"));
+					}
 				}));
 		});
 	});

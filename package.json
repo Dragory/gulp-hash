@@ -46,14 +46,14 @@
   },
   "main": "./index.js",
   "dependencies": {
-    "es6-promise": "^2.1.1",
-    "lodash.assign": "^2.4.1",
-    "lodash.template": "^2.4.1",
-    "through2": "^2.0.0",
-    "vinyl": "^2.1.0"
+    "es6-promise": "^4.2.8",
+    "lodash.assign": "^4.2.0",
+    "lodash.template": "^4.5.0",
+    "through2": "^3.0.1",
+    "vinyl": "^2.2.0"
   },
   "devDependencies": {
-    "gulp": "^3.9.0",
-    "mocha": "^1.20.1"
+    "gulp": "^4.0.2",
+    "mocha": "^7.1.1"
   }
 }

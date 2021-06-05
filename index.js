@@ -39,7 +39,7 @@ var exportObj = function(options) {
 				file.hash = hasher.digest('hex').slice(0, options.hashLength);
 
 				file.origPath = file.relative;
-				file.path = path.join(path.dirname(file.path), template(options.template, {
+				file.path = path.join(path.dirname(file.path), template(options.template)({
 					hash: file.hash,
 					name: fileName,
 					ext: fileExt
@@ -133,7 +133,7 @@ exportObj.manifest = function(manifestPath, options) {
 
 				this.push(new Vinyl({
 					path: manifestPath,
-					contents: new Buffer(JSON.stringify(origManifestContents[manifestPath], undefined, space))
+					contents: Buffer.from(JSON.stringify(origManifestContents[manifestPath], undefined, space))
 				}));
 
 				cb();
