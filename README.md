@@ -44,6 +44,7 @@ The plugin fully supports both buffers and streams. If you encounter any problem
 | options.space | null | [The space parameter for JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)|
 | options.deleteOld | false | If set to `true`, deletes old versions of hashed files |
 | options.sourceDir | __dirname | Used with `deleteOld`. Specifies where to search for old files to delete. |
+| options.map | (none) | Function allowing to modify keys (source) and values (destination) before the creation of the manifest. Should return an array with the new key-value pair respectively in the first and second entry. |
 
 ### hash.manifest(manifestPath, append, space)
 

@@ -75,6 +75,7 @@ exportObj.manifest = function(manifestPath, options) {
 	var space = null;
 	var append = true;
 	var sourceDir = __dirname;
+	var map = null;
 	var deleteOld = false;
 
 	if (arguments.length === 2 && typeof options === 'object') {
@@ -82,6 +83,7 @@ exportObj.manifest = function(manifestPath, options) {
 		if (options.append != null) append = options.append;
 		if (options.space != null) space = options.space;
 		if (options.sourceDir) sourceDir = options.sourceDir;
+		if (options.map) map = options.map;
 		deleteOld = !!options.deleteOld;
 	} else {
 		// Old signature
@@ -115,8 +117,9 @@ exportObj.manifest = function(manifestPath, options) {
 	return through2.obj(
 		function(file, enc, cb) {
 			if (typeof file.origPath !== 'undefined') {
-				var manifestSrc = formatManifestPath(file.origPath);
-				var manifestDest = formatManifestPath(file.relative);
+				var mapped = typeof map === 'function' ? map(file.origPath, file.relative) || [] : [];
+				var manifestSrc = formatManifestPath(mapped[0] || file.origPath);
+				var manifestDest = formatManifestPath(mapped[1] || file.relative);
 				newManifest[manifestSrc] = manifestDest;
 			}
 
