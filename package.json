@@ -48,7 +48,7 @@
   "dependencies": {
     "es6-promise": "^2.1.1",
     "lodash.assign": "^2.4.1",
-    "lodash.template": "^2.4.1",
+    "lodash": "^4.17.21",
     "through2": "^2.0.0",
     "vinyl": "^2.1.0"
   },
